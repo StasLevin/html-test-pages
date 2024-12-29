@@ -86,52 +86,11 @@
   <!-- JavaScript to Randomize Prices, Dates, and Sort Rows -->
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      // Select all tables on the page
-      var tables = document.getElementsByTagName('table');
+      const tables = document.querySelectorAll('table')
+      const headerTable = tables[0];
+      const contentTable = tables[1];
 
-      // Ensure there are at least two tables (header and content)
-      if (tables.length < 2) {
-        console.error('Content table not found.');
-        return;
-      }
-
-      // The second table is the content table
-      var contentTable = tables[1];
-
-      // Get all rows in the content table
-      var rows = Array.from(contentTable.getElementsByTagName('tr'));
-
-      // Function to generate a random price >= 1
-      function generateRandomPrice() {
-        var min = 1;
-        var max = 100;
-        var price = Math.random() * (max - min) + min;
-        return price.toFixed(2);
-      }
-
-      // Function to generate a random ISO compliant date with timezone
-      function generateRandomISODate() {
-        // Generate a random date within the last 30 days
-        var now = new Date();
-        var past = new Date(now.getTime() - Math.random() * 30 * 24 * 60 * 60 * 1000);
-        return past.toISOString();
-      }
-
-      // Assign random prices and dates to each price and date cell
-      rows.forEach(function(row) {
-        var cells = row.getElementsByTagName('td');
-        if (cells.length >= 5) { // Ensure there is a Price ($) and Last Update in Stock cell
-          // Assign random price
-          var priceValue = generateRandomPrice();
-          cells[2].innerHTML = '<span>$</span><span>' + priceValue + '</span>';
-
-          // Assign random ISO date
-          var isoDate = generateRandomISODate();
-          cells[4].innerHTML = '<span>' + isoDate + '</span>';
-        }
-      });
-
-      // Function to shuffle an array (Fisher-Yates Shuffle)
+      // Function to shuffle an array
       function shuffleArray(array) {
         for (let i = array.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
@@ -140,18 +99,41 @@
         return array;
       }
 
-      // Shuffle the rows array
-      var shuffledRows = shuffleArray(rows.slice());
+      // Shuffle columns
+      function shuffleColumns(headerRow, contentRows) {
+        // Get header cells and shuffle their indexes
+        const headers = Array.from(headerRow.children);
+        const columnOrder = headers.map((_, index) => index);
+        shuffleArray(columnOrder);
 
-      // Remove existing rows from the table
-      while (contentTable.firstChild) {
-        contentTable.removeChild(contentTable.firstChild);
+        // Reorder the header row
+        const newHeaderRow = columnOrder.map(index => headers[index].outerHTML).join('');
+        headerRow.innerHTML = newHeaderRow;
+
+        // Reorder each content row
+        contentRows.forEach(row => {
+          const cells = Array.from(row.children);
+          const newRow = columnOrder.map(index => cells[index].outerHTML).join('');
+          row.innerHTML = newRow;
+        });
       }
 
-      // Append shuffled rows back to the table
-      shuffledRows.forEach(function(row) {
-        contentTable.appendChild(row);
-      });
+      // Shuffle rows
+      function shuffleRows(contentRows, table) {
+        const shuffledRows = shuffleArray(Array.from(contentRows));
+        table.innerHTML = ''; // Clear existing rows
+        shuffledRows.forEach(row => table.appendChild(row)); // Append shuffled rows
+      }
+
+      // Get header row and content rows
+      const headerRow = headerTable.querySelector('tr');
+      const contentRows = Array.from(contentTable.querySelectorAll('tr'));
+
+      // Shuffle columns
+      shuffleColumns(headerRow, contentRows);
+
+      // Shuffle rows
+      shuffleRows(contentRows, contentTable);
     });
   </script>
 <script>window.SaolaParams = { token: '02ba8078-1b39-40f6-8952-f15f28808033' };</script>
