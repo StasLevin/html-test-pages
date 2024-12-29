@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Interactive Randomized Tables</title>
+</head>
+<body>
+
+    <!-- Header Table -->
+    <table border="1" cellspacing="0" cellpadding="4" width="100%">
+        <thead>
+            <tr>
+                <th width="25%">Column One</th>
+                <th width="25%">Column Two</th>
+                <th width="25%">Column Three</th>
+                <th width="25%">Column Four</th>
+            </tr>
+        </thead>
+    </table>
+
+    <!-- Content Table -->
+    <table border="1" cellspacing="0" cellpadding="4" width="100%">
+        <tbody>
+            <tr>
+                <td width="25%"><button type="button">Click Me</button></td>
+                <td width="25%"><button type="button">Click Me</button></td>
+                <td width="25%"><button type="button">Click Me</button></td>
+                <td width="25%"><button type="button">Click Me</button></td>
+            </tr>
+            <tr>
+                <td width="25%"><button type="button">Click Me</button></td>
+                <td width="25%"><button type="button">Click Me</button></td>
+                <td width="25%"><button type="button">Click Me</button></td>
+                <td width="25%"><button type="button">Click Me</button></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Exercise Section -->
+    <section>
+        <h2>Exercises</h2>
+        <ol>
+            <li>
+                Locate the "True!" button in the first cell of the third column. 
+                Click on the button and verify that it responds correctly.
+            </li>
+        </ol>
+    </section>
+
+
+    <!-- JavaScript to Shuffle Columns and Assign Event Listeners -->
+    <script>
+        // Function to shuffle an array using Fisher-Yates algorithm
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // Function to rearrange table columns based on shuffled order
+        function rearrangeTables(shuffledColumns) {
+            // Rearrange Header Table
+            const headerTable = document.getElementsByTagName('table')[0];
+            const headerRow = headerTable.getElementsByTagName('thead')[0].getElementsByTagName('tr')[0];
+            const headerThs = Array.from(headerRow.getElementsByTagName('th'));
+
+            // Remove all existing <th> elements
+            while (headerRow.firstChild) {
+                headerRow.removeChild(headerRow.firstChild);
+            }
+
+            // Add <th> elements in shuffled order with width attribute
+            shuffledColumns.forEach(colName => {
+                const th = document.createElement('th');
+                th.textContent = colName;
+                th.setAttribute('width', '25%'); // Set width attribute
+                headerRow.appendChild(th);
+            });
+
+            // Rearrange Content Table
+            const contentTable = document.getElementsByTagName('table')[1];
+            const contentRows = Array.from(contentTable.getElementsByTagName('tbody')[0].getElementsByTagName('tr'));
+
+            contentRows.forEach(row => {
+                const tds = Array.from(row.getElementsByTagName('td'));
+                // Remove all existing <td> elements
+                while (row.firstChild) {
+                    row.removeChild(row.firstChild);
+                }
+                // Add <td> elements in shuffled order with width attribute
+                shuffledColumns.forEach(() => {
+                    const td = document.createElement('td');
+                    td.setAttribute('width', '25%'); // Set width attribute
+                    const button = document.createElement('button');
+                    button.textContent = 'Click Me';
+		    button.setAttribute('type', 'button');
+                    td.appendChild(button);
+                    row.appendChild(td);
+                });
+            });
+
+            return shuffledColumns;
+        }
+
+        // Function to assign event listeners to buttons
+        function assignEventListeners(shuffledColumns) {
+            // Identify the index of "Column Three" in the shuffledColumns array
+            const columnThreeIndex = shuffledColumns.indexOf('Column Three');
+
+            if (columnThreeIndex === -1) {
+                console.error('"Column Three" not found in the shuffled columns.');
+                return;
+            }
+
+            // Get the content table
+            const contentTable = document.getElementsByTagName('table')[1];
+            const contentRows = Array.from(contentTable.getElementsByTagName('tr'));
+
+            // Iterate over each row and assign event listeners
+            contentRows.forEach((row, rowIndex) => {
+                const cells = row.getElementsByTagName('td');
+
+                for (let i = 0; i < cells.length; i++) {
+                    const button = cells[i].getElementsByTagName('button')[0];
+                    if (button) {
+                        if (i === columnThreeIndex && rowIndex === 0) {
+                            // First row, Column Three
+                            button.addEventListener('click', function() {
+                                alert('True!');
+                            });
+                        } else {
+                            // All other buttons
+                            button.addEventListener('click', function() {
+                                alert('False!');
+                            });
+                        }
+                    }
+                }
+            });
+        }
+
+        // Main function to execute on DOMContentLoaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Define the columns
+            const columns = ['Column One', 'Column Two', 'Column Three', 'Column Four'];
+
+            // Shuffle the columns
+            const shuffledColumns = shuffleArray([...columns]);
+
+            // Rearrange the tables based on shuffled columns
+            rearrangeTables(shuffledColumns);
+
+            // Assign event listeners to buttons
+            assignEventListeners(shuffledColumns);
+        });
+    </script>
+
+</body>
+</html>

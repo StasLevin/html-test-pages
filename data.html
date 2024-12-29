@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Product Inventory</title>
+</head>
+<body>
+
+  <!-- Header Table -->
+  <table border="1" cellspacing="0" cellpadding="5" width="100%">
+    <tr>
+      <th width="20%">Product Name</th>
+      <th width="20%">Category</th>
+      <th width="20%">Price ($)</th>
+      <th width="20%">Stock Status</th>
+      <th width="20%">Last Update in Stock</th>
+    </tr>
+  </table>
+
+  <!-- Content Table -->
+  <table border="1" cellspacing="0" cellpadding="5" width="100%">
+    <tr>
+      <td width="20%">Wireless Mouse</td>
+      <td width="20%">Electronics</td>
+      <td width="20%"><span>$</span><span>25.99</span></td>
+      <td width="20%">In Stock</td>
+      <td width="20%"><span>2024-04-15T10:30:00Z</span></td>
+    </tr>
+    <tr>
+      <td width="20%">Yoga Mat</td>
+      <td width="20%">Fitness</td>
+      <td width="20%"><span>$</span><span>45.00</span></td>
+      <td width="20%">Limited Stock</td>
+      <td width="20%"><span>2024-04-12T08:15:00Z</span></td>
+    </tr>
+    <tr>
+      <td width="20%">Ceramic Coffee Mug</td>
+      <td width="20%">Kitchenware</td>
+      <td width="20%"><span>$</span><span>12.50</span></td>
+      <td width="20%">Out of Stock</td>
+      <td width="20%"><span>2024-04-10T14:45:00Z</span></td>
+    </tr>
+    <tr>
+      <td width="20%">Bluetooth Speaker</td>
+      <td width="20%">Electronics</td>
+      <td width="20%"><span>$</span><span>60.00</span></td>
+      <td width="20%">In Stock</td>
+      <td width="20%"><span>2024-04-14T09:00:00Z</span></td>
+    </tr>
+    <tr>
+      <td width="20%">Running Shoes</td>
+      <td width="20%">Footwear</td>
+      <td width="20%"><span>$</span><span>89.99</span></td>
+      <td width="20%">In Stock</td>
+      <td width="20%"><span>2024-04-13T16:20:00Z</span></td>
+    </tr>
+    <tr>
+      <td width="20%">LED Desk Lamp</td>
+      <td width="20%">Home Office</td>
+      <td width="20%"><span>$</span><span>30.75</span></td>
+      <td width="20%">Limited Stock</td>
+      <td width="20%"><span>2024-04-11T11:10:00Z</span></td>
+    </tr>
+    <!-- Add more product rows as needed -->
+  </table>
+
+  <!-- Exercise Section -->
+  <section>
+    <h2>Exercises</h2>
+    <ol>
+      <li>Access specific product details by specifying the column name and row number.</li>
+      <li>Identify and list all products with prices exceeding $50.</li>
+      <li>Filter and display products based on their category.</li>
+      <li>Extract data from a specific column using the product name and category.</li>
+      <li>Calculate the average price of all listed products.</li>
+      <li>Find all products that are currently out of stock.</li>
+      <li>Sort the products in ascending or descending order based on price.</li>
+      <li>Determine the total number of products available in each category.</li>
+      <li>Highlight products with limited stock to prioritize restocking.</li>
+      <li>Retrieve all products updated in stock within the last 7 days.</li>
+      <li>Find the most recently updated product in each category.</li>
+      <li>List all products with their last update timestamps.</li>
+    </ol>
+  </section>
+
+  <!-- JavaScript to Randomize Prices, Dates, and Sort Rows -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Select all tables on the page
+      var tables = document.getElementsByTagName('table');
+
+      // Ensure there are at least two tables (header and content)
+      if (tables.length < 2) {
+        console.error('Content table not found.');
+        return;
+      }
+
+      // The second table is the content table
+      var contentTable = tables[1];
+
+      // Get all rows in the content table
+      var rows = Array.from(contentTable.getElementsByTagName('tr'));
+
+      // Function to generate a random price >= 1
+      function generateRandomPrice() {
+        var min = 1;
+        var max = 100;
+        var price = Math.random() * (max - min) + min;
+        return price.toFixed(2);
+      }
+
+      // Function to generate a random ISO compliant date with timezone
+      function generateRandomISODate() {
+        // Generate a random date within the last 30 days
+        var now = new Date();
+        var past = new Date(now.getTime() - Math.random() * 30 * 24 * 60 * 60 * 1000);
+        return past.toISOString();
+      }
+
+      // Assign random prices and dates to each price and date cell
+      rows.forEach(function(row) {
+        var cells = row.getElementsByTagName('td');
+        if (cells.length >= 5) { // Ensure there is a Price ($) and Last Update in Stock cell
+          // Assign random price
+          var priceValue = generateRandomPrice();
+          cells[2].innerHTML = '<span>$</span><span>' + priceValue + '</span>';
+
+          // Assign random ISO date
+          var isoDate = generateRandomISODate();
+          cells[4].innerHTML = '<span>' + isoDate + '</span>';
+        }
+      });
+
+      // Function to shuffle an array (Fisher-Yates Shuffle)
+      function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+      }
+
+      // Shuffle the rows array
+      var shuffledRows = shuffleArray(rows.slice());
+
+      // Remove existing rows from the table
+      while (contentTable.firstChild) {
+        contentTable.removeChild(contentTable.firstChild);
+      }
+
+      // Append shuffled rows back to the table
+      shuffledRows.forEach(function(row) {
+        contentTable.appendChild(row);
+      });
+    });
+  </script>
+
+</body>
+</html>
