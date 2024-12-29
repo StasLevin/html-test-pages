@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Page with Datalist</title>
+</head>
+<body>
+  <h1>Test Page</h1>
+  <p>Select an item from the list to view details:</p>
+
+  <form>
+    <label for="itemList">Choose an item:</label>
+    <input list="items" name="itemList">
+    <datalist id="items">
+      <option value="Wireless Mouse">
+      <option value="Yoga Mat">
+      <option value="Ceramic Coffee Mug">
+      <option value="Bluetooth Speaker">
+      <option value="Running Shoes">
+      <option value="LED Desk Lamp">
+    </datalist>
+    <button type="button">Show Details</button>
+  </form>
+
+  <p></p>
+
+
+ <h1>Exercises</h1>
+  <ul>
+    <li>Select an item from the list and validate the displayed text matches the expected details.</li>
+  </ul>
+
+  <script>
+    document.querySelector('button').addEventListener('click', function () {
+      var selectedItem = document.querySelector('input').value;
+      var detailParagraph = document.querySelector('p:last-of-type');
+
+      if (selectedItem === 'Wireless Mouse') {
+        detailParagraph.textContent = 'Wireless Mouse: A high-performance mouse suitable for all your computing needs. Price: $25.99';
+      } else if (selectedItem === 'Yoga Mat') {
+        detailParagraph.textContent = 'Yoga Mat: A durable, non-slip mat perfect for yoga and other fitness activities. Price: $45.00';
+      } else if (selectedItem === 'Ceramic Coffee Mug') {
+        detailParagraph.textContent = 'Ceramic Coffee Mug: A stylish mug for your morning coffee or tea. Price: $12.50';
+      } else if (selectedItem === 'Bluetooth Speaker') {
+        detailParagraph.textContent = 'Bluetooth Speaker: A compact speaker delivering high-quality sound for music and calls. Price: $60.00';
+      } else if (selectedItem === 'Running Shoes') {
+        detailParagraph.textContent = 'Running Shoes: Comfortable and durable shoes ideal for running and workouts. Price: $89.99';
+      } else if (selectedItem === 'LED Desk Lamp') {
+        detailParagraph.textContent = 'LED Desk Lamp: An energy-efficient lamp with adjustable brightness settings. Price: $30.75';
+      } else {
+        detailParagraph.textContent = 'No details available for the selected item.';
+      }
+    });
+  </script>
+<script>window.SaolaParams = { token: '02ba8078-1b39-40f6-8952-f15f28808033' };</script>
+<script defer src="https://www.saola.ai/sdk/saola.latest.js"></script>
+</body>
+</html>
