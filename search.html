@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Hotel Search Test Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        form {
+            margin-bottom: 20px;
+            position: relative; /* To position the suggestion box absolutely inside */
+        }
+        input, button {
+            padding: 8px;
+            margin-right: 10px;
+            font-size: 1em;
+        }
+        input[type="text"] {
+            width: 200px;
+        }
+        input[type="date"] {
+            width: 150px;
+        }
+        button {
+            cursor: pointer;
+        }
+        /* Styling for the auto-complete suggestion box */
+        form > ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            position: absolute;
+            border: 1px solid #ccc;
+            background-color: white;
+            max-height: 150px;
+            overflow-y: auto;
+            display: none; /* Hidden by default */
+            z-index: 1000;
+            width: 200px; /* Match the search input width */
+            top: 100%; /* Position below the search input */
+            left: 0;
+        }
+        form > ul li {
+            padding: 8px;
+            cursor: pointer;
+        }
+        form > ul li:hover {
+            background-color: #f0f0f0;
+        }
+        /* Styling for the hotel results list */
+        div > ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        div > ul li {
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+        }
+        div > ul li h2 {
+            margin: 0 0 10px 0;
+            font-size: 1.5em;
+        }
+        div > ul li p {
+            margin: 5px 0;
+        }
+        nav {
+            text-align: center;
+            margin-top: 20px;
+        }
+        nav button {
+            padding: 8px 12px;
+            margin: 0 2px;
+            cursor: pointer;
+            border: 1px solid #ccc;
+            background-color: white;
+            border-radius: 3px;
+        }
+        nav button:hover:not(:disabled) {
+            background-color: #f0f0f0;
+        }
+        nav button:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+    <section id="exercises">
+        <h2>Exercises</h2>
+        <ol>
+            <li>Ensure that there is at least one hotel priced above $200 by scanning all available pages.</li>
+            <li>Implement a hotel search feature that allows users to filter by check-in and check-out dates. Ensure that both dates are in the future and that the check-out date is not earlier than the check-in date.</li>
+            <li>Confirm that the hotel list is properly filtered when utilizing the auto-complete search functionality.</li>
+            <li>Validate that the search form does not submit unless all required fields are correctly filled.</li>
+            <li>Ensure that pagination works correctly and that users can navigate through all available hotel listings.</li>
+            <li>Test the responsiveness of the page across different devices and screen sizes.</li>
+            <li>Verify that the currency symbols are correctly displayed alongside hotel prices.</li>
+            <li>Implement error handling for scenarios where no hotels match the search criteria.</li>
+        </ol>
+    </section>
+    <form>
+        <input type="text" placeholder="Search hotels..." autocomplete="off">
+        <input type="date" placeholder="Check-in">
+        <input type="date" placeholder="Check-out">
+        <button type="submit">Search</button>
+        <ul></ul> <!-- Suggestion box -->
+    </form>
+
+    <div>
+        <ul>
+            <!-- Hotel results will be injected here -->
+        </ul>
+    </div>
+
+    <nav>
+        <!-- Pagination buttons will be injected here -->
+    </nav>
+
+    <script>
+        // Sample hotel data with additional fields
+        const hotels = [
+            { name: "Grand Plaza", location: "New York", price: 150, roomType: "Suite", bedSize: "King", floorLocation: "10th Floor" },
+            { name: "Sea View Resort", location: "Miami", price: 200, roomType: "Deluxe", bedSize: "Queen", floorLocation: "5th Floor" },
+            { name: "Mountain Retreat", location: "Denver", price: 180, roomType: "Double", bedSize: "Twin", floorLocation: "3rd Floor" },
+            { name: "City Lights Hotel", location: "Chicago", price: 160, roomType: "Single", bedSize: "Queen", floorLocation: "7th Floor" },
+            { name: "Lakeside Inn", location: "Chicago", price: 140, roomType: "Double", bedSize: "Twin", floorLocation: "2nd Floor" },
+            { name: "Sunset Boulevard", location: "Los Angeles", price: 220, roomType: "Suite", bedSize: "King", floorLocation: "15th Floor" },
+            { name: "Historic Stay", location: "Boston", price: 170, roomType: "Deluxe", bedSize: "Queen", floorLocation: "4th Floor" },
+            { name: "Comfort Suites", location: "Houston", price: 130, roomType: "Single", bedSize: "Twin", floorLocation: "1st Floor" },
+            { name: "Urban Oasis", location: "San Francisco", price: 210, roomType: "Suite", bedSize: "King", floorLocation: "12th Floor" },
+            { name: "Budget Lodge", location: "Seattle", price: 90, roomType: "Single", bedSize: "Twin", floorLocation: "Ground Floor" },
+            { name: "Elite Palace", location: "Las Vegas", price: 250, roomType: "Presidential Suite", bedSize: "King", floorLocation: "20th Floor" },
+            { name: "Riverfront Hotel", location: "Portland", price: 160, roomType: "Double", bedSize: "Queen", floorLocation: "6th Floor" },
+            { name: "Garden View", location: "Atlanta", price: 140, roomType: "Deluxe", bedSize: "Twin", floorLocation: "3rd Floor" },
+            { name: "Airport Inn", location: "Dallas", price: 120, roomType: "Single", bedSize: "Queen", floorLocation: "2nd Floor" },
+            { name: "Coastal Haven", location: "San Diego", price: 190, roomType: "Suite", bedSize: "King", floorLocation: "8th Floor" }
+        ];
+
+        // Currency symbols
+        const currencies = ['€', '$', '£', '¥', '₹'];
+
+        // Pagination variables
+        let currentPage = 1;
+        const resultsPerPage = Math.floor(Math.random() * 5) + 1;;
+
+        // References to elements
+        const form = document.querySelector('form');
+        const searchInput = form.querySelector('input[type="text"]');
+        const checkInInput = form.querySelector('input[type="date"]:nth-of-type(1)');
+        const checkOutInput = form.querySelector('input[type="date"]:nth-of-type(2)');
+        const suggestionBox = form.querySelector('ul'); // Suggestion box inside form
+        const resultsList = document.querySelector('div > ul'); // Second <ul> for results
+        const nav = document.querySelector('nav');
+
+        // Auto-complete functionality
+        function positionSuggestionBox() {
+            const rect = searchInput.getBoundingClientRect();
+            suggestionBox.style.top = (rect.bottom + window.scrollY) + 'px';
+            suggestionBox.style.left = (rect.left + window.scrollX) + 'px';
+            suggestionBox.style.width = rect.width + 'px';
+        }
+
+        window.addEventListener('resize', positionSuggestionBox);
+        window.addEventListener('scroll', positionSuggestionBox);
+
+        searchInput.addEventListener('input', function() {
+            const query = this.value.toLowerCase();
+            suggestionBox.innerHTML = '';
+            if (query) {
+                const matches = hotels.filter(hotel => hotel.name.toLowerCase().includes(query));
+                matches.forEach(hotel => {
+                    const li = document.createElement('li');
+                    li.textContent = hotel.name;
+                    suggestionBox.appendChild(li);
+                });
+                if (matches.length > 0) {
+                    suggestionBox.style.display = 'block';
+                    positionSuggestionBox();
+                } else {
+                    suggestionBox.style.display = 'none';
+                }
+            } else {
+                suggestionBox.style.display = 'none';
+            }
+        });
+
+        suggestionBox.addEventListener('click', function(e) {
+            if (e.target.tagName.toLowerCase() === 'li') {
+                searchInput.value = e.target.textContent;
+                suggestionBox.style.display = 'none';
+                performSearch();
+            }
+        });
+
+        document.addEventListener('click', function(e) {
+            if (e.target !== searchInput) {
+                suggestionBox.style.display = 'none';
+            }
+        });
+
+        // Perform search and render results
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            performSearch();
+        });
+
+        function performSearch() {
+            currentPage = 1;
+            renderResults();
+            renderPagination();
+        }
+
+        function renderResults() {
+            resultsList.innerHTML = '';
+            // For simplicity, the search filters only by hotel name
+            const query = searchInput.value.toLowerCase();
+            const filteredHotels = hotels.filter(hotel => hotel.name.toLowerCase().includes(query));
+
+            const start = (currentPage - 1) * resultsPerPage;
+            const end = start + resultsPerPage;
+            const pageResults = filteredHotels.slice(start, end);
+
+            if (pageResults.length === 0) {
+                const noResultItem = document.createElement('li');
+                noResultItem.textContent = "No hotels found.";
+                resultsList.appendChild(noResultItem);
+                return;
+            }
+
+            pageResults.forEach(hotel => {
+                const li = document.createElement('li');
+
+                // Hotel Name
+                const nameHeader = document.createElement('h2');
+                nameHeader.textContent = hotel.name;
+                li.appendChild(nameHeader);
+
+                // Location
+                const locationPara = document.createElement('p');
+                locationPara.textContent = `Location: ${hotel.location}`;
+                li.appendChild(locationPara);
+
+                // Price with separate spans for currency and amount
+                const pricePara = document.createElement('p');
+                pricePara.textContent = 'Price: ';
+                const currencySpan = document.createElement('span');
+                const currency = currencies[Math.floor(Math.random() * currencies.length)];
+                currencySpan.textContent = currency;
+                const priceSpan = document.createElement('span');
+                priceSpan.textContent = hotel.price;
+                pricePara.appendChild(currencySpan);
+                pricePara.appendChild(priceSpan);
+                li.appendChild(pricePara);
+
+                // Room Type
+                const roomTypePara = document.createElement('p');
+                roomTypePara.textContent = `Room Type: ${hotel.roomType}`;
+                li.appendChild(roomTypePara);
+
+                // Bed Size
+                const bedSizePara = document.createElement('p');
+                bedSizePara.textContent = `Bed Size: ${hotel.bedSize}`;
+                li.appendChild(bedSizePara);
+
+                // Floor Location
+                const floorLocationPara = document.createElement('p');
+                floorLocationPara.textContent = `Floor Location: ${hotel.floorLocation}`;
+                li.appendChild(floorLocationPara);
+
+                resultsList.appendChild(li);
+            });
+        }
+
+        function renderPagination() {
+            nav.innerHTML = '';
+            // For pagination, consider the filtered hotels
+            const query = searchInput.value.toLowerCase();
+            const filteredHotels = hotels.filter(hotel => hotel.name.toLowerCase().includes(query));
+            const totalPages = Math.ceil(filteredHotels.length / resultsPerPage);
+
+            if (totalPages === 0) return; // No pagination needed
+
+            // First Button
+            const firstBtn = document.createElement('button');
+            firstBtn.textContent = 'First';
+            firstBtn.disabled = currentPage === 1;
+            firstBtn.addEventListener('click', () => {
+                currentPage = 1;
+                renderResults();
+                renderPagination();
+            });
+            nav.appendChild(firstBtn);
+
+            // Previous Button
+            const prevBtn = document.createElement('button');
+            prevBtn.textContent = 'Previous';
+            prevBtn.disabled = currentPage === 1;
+            prevBtn.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderResults();
+                    renderPagination();
+                }
+            });
+            nav.appendChild(prevBtn);
+
+            // Page Numbers
+            for (let i = 1; i <= totalPages; i++) {
+                const pageBtn = document.createElement('button');
+                pageBtn.textContent = i;
+                if (i === currentPage) {
+                    pageBtn.disabled = true;
+                }
+                pageBtn.addEventListener('click', () => {
+                    currentPage = i;
+                    renderResults();
+                    renderPagination();
+                });
+                nav.appendChild(pageBtn);
+            }
+
+            // Next Button
+            const nextBtn = document.createElement('button');
+            nextBtn.textContent = 'Next';
+            nextBtn.disabled = currentPage === totalPages;
+            nextBtn.addEventListener('click', () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderResults();
+                    renderPagination();
+                }
+            });
+            nav.appendChild(nextBtn);
+
+            // Last Button
+            const lastBtn = document.createElement('button');
+            lastBtn.textContent = 'Last';
+            lastBtn.disabled = currentPage === totalPages;
+            lastBtn.addEventListener('click', () => {
+                currentPage = totalPages;
+                renderResults();
+                renderPagination();
+            });
+            nav.appendChild(lastBtn);
+        }
+
+        // Initial render
+        renderResults();
+        renderPagination();
+    </script>
+
+	<script>window.SaolaParams = { token: '02ba8078-1b39-40f6-8952-f15f28808033' };</script>
+	<script defer src="https://www.saola.ai/sdk/saola.latest.js"></script>
+</body>
+</html>
